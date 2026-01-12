@@ -140,19 +140,19 @@
                     let cardFooterHtml = ''
                     if (trashMode == false) {
                         cardFooterHtml = `
-                            <a href="#" onclick="likeMovie()">
+                            <a href="#" onclick="likeMovie('${title}')">
                             위로!
                             </a>
-                            <a href="#" onclick="trashMovie()">
+                            <a href="#" onclick="trashMovie('${title}')">
                             휴지통으로
                             </a>
                         `
                     } else {
                         cardFooterHtml = `
-                            <a href="#" onclick="restoreMovie()">
+                            <a href="#" onclick="restoreMovie('${title}')">
                             복구하기
                             </a>
-                            <a href="#" onclick="deleteMovie()">
+                            <a href="#" onclick="deleteMovie('${title}')">
                             영구삭제
                             </a>
                         `
