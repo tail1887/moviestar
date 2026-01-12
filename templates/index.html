@@ -221,6 +221,29 @@
 
             function displayTrashMode(trashMode) {
                 // trashMode 에 따라 "휴지통 보기" 또는 "휴지통 나가기" 가 출력 되게 구현해야 됩니다.
+                $('#trash-mode-box').empty()
+                
+                if (trashMode == false) {
+                    $('#trash-mode-box').append(`
+                        <a href="#" class="btn btn-secondary" onclick="enterTrashMode()">휴지통 보기</a>
+                    `)
+                } else {
+                    $('#trash-mode-box').append(`
+                        <a href="#" class="btn btn-secondary" onclick="exitTrashMode()">휴지통 나가기</a>
+                    `)
+                }
+            }
+
+            function enterTrashMode() {
+                trashMode = true
+                displayTrashMode(trashMode)
+                showMovie()
+            }
+
+            function exitTrashMode() {
+                trashMode = false
+                displayTrashMode(trashMode)
+                showMovie()
             }
 
         </script>
