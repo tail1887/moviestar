@@ -100,7 +100,19 @@
                         },
                     })
                 } else {
-                    alert('여러분이 휴지통 보기 API 를 만들어서 query 를 보내야 합니다.\n그 결과를 addMovieCards() 함수로 넘겨주면 됩니다.')
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/list/trash",
+                        data: {'sortMode': sortMode},
+                        success: function(response) {
+                            if (response['result'] != 'success') {
+                                alert(sortMode + ' 순으로 휴지통 영화 목록 받아오기 실패!')
+                                return
+                            }
+                            let movies = response['movies_list']
+                            addMovieCards(movies, true)
+                        },
+                    })
                 }
             }
 
