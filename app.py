@@ -74,6 +74,22 @@ def show_movies():
     return jsonify({'result': 'success', 'movies_list': movies})
 
 
+# API #2-1: 휴지통에 있는 영화 목록을 반환합니다.
+@app.route('/api/list/trash', methods=['GET'])
+def show_trashed_movies():
+    # client 에서 요청한 정렬 방식이 있는지를 확인합니다. 없다면 기본으로 좋아요 순으로 정렬합니다.
+    sortMode = request.args.get('sortMode', 'likes')
+
+    # 1. db에서 trashed 가 True인 movies 목록을 검색합니다.
+    if sortMode == 'likes':
+        movies = list(db.movies.find({'trashed': True}, {}))
+    else:
+        return jsonify({'result': 'failure'})
+
+    # 2. 성공하면 success 메시지와 함께 movies_list 목록을 클라이언트에 전달합니다.
+    return jsonify({'result': 'success', 'movies_list': movies})
+
+
 # API #3: 영화에 좋아요 숫자를 하나 올립니다.
 @app.route('/api/like', methods=['POST'])
 def like_movie():
