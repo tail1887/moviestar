@@ -96,6 +96,29 @@ def like_movie():
         return jsonify({'result': 'failure'})
 
 
+# API #4: 영화를 휴지통으로 보냅니다 (Soft Delete).
+@app.route('/api/delete', methods=['POST'])
+def delete_movie():
+    # 1. 클라이언트로부터 title_give를 받습니다.
+    title_receive = request.form.get('title_give')
+    
+    # 2. 입력값 검증
+    if not title_receive:
+        return jsonify({'result': 'failure', 'msg': '영화 제목이 전달되지 않았습니다.'})
+    
+    # 3. movies 목록에서 해당 제목의 영화를 찾아 trashed를 True로 변경합니다.
+    result = db.movies.update_one(
+        {'title': title_receive},
+        {'$set': {'trashed': True}}
+    )
+    
+    # 4. 하나의 영화만 영향을 받아야 하므로 result.modified_count가 1이면 success를 보냅니다.
+    if result.modified_count == 1:
+        return jsonify({'result': 'success', 'msg': '삭제 완료!'})
+    else:
+        return jsonify({'result': 'failure', 'msg': '해당 영화를 찾을 수 없거나 이미 삭제되었습니다.'})
+
+
 if __name__ == '__main__':
     print(sys.executable)
     app.run('0.0.0.0', port=5000, debug=True)
