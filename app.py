@@ -63,11 +63,15 @@ def show_movies():
 
     # 1. db에서 trashed 가 False인 movies 목록을 검색합니다. 주어진 정렬 방식으로 정렬합니다.
     # 참고) find({},{}), sort()를 활용하면 됨.
-    #    TODO: 개봉일 순서 정렬처럼 여러 기준으로 순서대로 정렬해야되는 경우 sort([('A', 1), ('B', 1)]) 처럼 인자를 설정해야 합니다!!!
     if sortMode == 'likes':
         movies = list(db.movies.find({'trashed': False}, {}).sort('likes', -1))  # 좋아요 많은 순
+    elif sortMode == 'viewers':
+        movies = list(db.movies.find({'trashed': False}, {}).sort('viewers', -1))  # 관객수 많은 순
+    elif sortMode == 'date':
+        # 개봉일 순서: 연도 → 월 → 일 순으로 내림차순 정렬 (최신순)
+        movies = list(db.movies.find({'trashed': False}, {}).sort([('open_year', -1), ('open_month', -1), ('open_day', -1)]))
     else:
-        return jsonify({'result': 'failure'})
+        return jsonify({'result': 'failure', 'msg': '지원하지 않는 정렬 방식입니다.'})
 
     # 2. 성공하면 success 메시지와 함께 movies_list 목록을 클라이언트에 전달합니다.
     return jsonify({'result': 'success', 'movies_list': movies})
@@ -82,12 +86,16 @@ def show_trashed_movies():
     # 1. db에서 trashed 가 True인 movies 목록을 검색합니다.
     if sortMode == 'likes':
         movies = list(db.movies.find({'trashed': True}, {}).sort('likes', -1))  # 좋아요 많은 순
+    elif sortMode == 'viewers':
+        movies = list(db.movies.find({'trashed': True}, {}).sort('viewers', -1))  # 관객수 많은 순
+    elif sortMode == 'date':
+        # 개봉일 순서: 연도 → 월 → 일 순으로 내림차순 정렬 (최신순)
+        movies = list(db.movies.find({'trashed': True}, {}).sort([('open_year', -1), ('open_month', -1), ('open_day', -1)]))
     else:
-        return jsonify({'result': 'failure'})
+        return jsonify({'result': 'failure', 'msg': '지원하지 않는 정렬 방식입니다.'})
 
     # 2. 성공하면 success 메시지와 함께 movies_list 목록을 클라이언트에 전달합니다.
     return jsonify({'result': 'success', 'movies_list': movies})
-
 
 # API #3: 영화에 좋아요 숫자를 하나 올립니다.
 @app.route('/api/like', methods=['POST'])

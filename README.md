@@ -59,9 +59,9 @@
     - [📌 Commit Message Convention](#-commit-message-convention)
     - [✅ Roadmap \& Progress](#-roadmap--progress)
       - [🌱 Branch: `main`](#-branch-main)
+      - [🌿 Branch: `feature/sort-function` (정렬 기능 완성)](#-branch-featuresort-function-정렬-기능-완성)
       - [🌿 Branch: `feature/trash-function` (휴지통 기능)](#-branch-featuretrash-function-휴지통-기능)
       - [🌿 Branch: `feature/like-function` (좋아요 기능 완성)](#-branch-featurelike-function-좋아요-기능-완성)
-      - [🌿 Branch: `feature/sort-function` (정렬 기능 완성)](#-branch-featuresort-function-정렬-기능-완성)
       - [🎨 Branch: `style/ui-enhancement` (UI 개선)](#-branch-styleui-enhancement-ui-개선)
       - [🐛 Branch: `fix/error-handling` (에러 처리)](#-branch-fixerror-handling-에러-처리)
       - [📝 Merge to `main`](#-merge-to-main)
@@ -502,6 +502,7 @@ python -m unittest discover tests/integration
 - **docs**: 문서 수정 (README, 주석 등)
 - **style**: 코드 포맷팅, UI 스타일 변경 (로직 변경 없음)
 - **refactor**: 코드 리팩토링 (기능은 동일하나 구조 개선)
+- **test**: 테스트 코드 추가/수정
 
 ### ✅ Roadmap & Progress
 
@@ -512,6 +513,12 @@ python -m unittest discover tests/integration
   - GET /api/list, POST /api/like 기본 구조
   - HTML/CSS/JS 기본 UI 구현
   - jQuery AJAX 영화 목록 표시 기능
+
+#### 🌿 Branch: `feature/sort-function` (정렬 기능 완성)
+- [x] feat: 백엔드 - GET /api/list에 .sort() 로직 추가 (likes, viewers, date)
+- [x] feat: 프론트엔드 - displaySorter() 함수 완성 (active 클래스 추가)
+- [x] feat: 개봉일 순 정렬 기능 구현 (open_year, open_month, open_day 활용)
+- [x] test: 정렬 기능 통합 테스트 작성
 
 #### 🌿 Branch: `feature/trash-function` (휴지통 기능)
 - [x] feat: 백엔드 - POST /api/delete 엔드포인트 추가
@@ -528,12 +535,6 @@ python -m unittest discover tests/integration
 - [ ] feat: 카드 버튼 onclick에 title 전달하도록 수정
 - [ ] fix: 특정 영화에만 좋아요가 적용되도록 수정
 - [ ] test: 좋아요 기능 통합 테스트 작성
-
-#### 🌿 Branch: `feature/sort-function` (정렬 기능 완성)
-- [ ] feat: 백엔드 - GET /api/list에 .sort() 로직 추가 (likes, viewers, date)
-- [ ] feat: 프론트엔드 - displaySorter() 함수 완성 (active 클래스 추가)
-- [ ] feat: 개봉일 순 정렬 기능 구현 (open_year, open_month, open_day 활용)
-- [ ] test: 정렬 기능 통합 테스트 작성
 
 #### 🎨 Branch: `style/ui-enhancement` (UI 개선)
 - [ ] style: 영화 포스터 이미지 실제 URL로 교체 (현재 고양이 이미지)
