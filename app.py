@@ -100,23 +100,33 @@ def show_trashed_movies():
 # API #3: 영화에 좋아요 숫자를 하나 올립니다.
 @app.route('/api/like', methods=['POST'])
 def like_movie():
-    # 1. movies 목록에서 find_one으로 영화 하나를 찾습니다.
-    #    TODO: 영화 하나만 찾도록 다음 코드를 직접 수정해보세요!!!
-    movie = db.movies.find_one({}) # 여기를 완성 해보세요
-
-    # 2. movie의 like 에 1을 더해준 new_like 변수를 만듭니다.
+    # 1. 클라이언트로부터 title_give를 받습니다.
+    title_receive = request.form.get('title_give')
+    
+    # 2. 입력값 검증
+    if not title_receive:
+        return jsonify({'result': 'failure', 'msg': '영화 제목이 전달되지 않았습니다.'})
+    
+    # 3. movies 목록에서 해당 제목의 영화를 찾습니다.
+    movie = db.movies.find_one({'title': title_receive})
+    
+    if not movie:
+        return jsonify({'result': 'failure', 'msg': '해당 영화를 찾을 수 없습니다.'})
+    
+    # 4. movie의 likes에 1을 더해준 new_likes 변수를 만듭니다.
     new_likes = movie['likes'] + 1
 
-    # 3. movies 목록에서 id 가 매칭되는 영화의 like 를 new_like로 변경합니다.
-    #    참고: '$set' 활용하기!
-    #    TODO: 영화 하나의 likes값이 변경되도록 다음 코드를 직접 수정해보세요!!!
-    result = db.movies.update_one({}, {'$set': {'likes': new_likes}}) # 여기를 완성해보세요
+    # 5. movies 목록에서 해당 영화의 likes를 new_likes로 변경합니다.
+    result = db.movies.update_one(
+        {'title': title_receive},
+        {'$set': {'likes': new_likes}}
+    )
 
-    # 4. 하나의 영화만 영향을 받아야 하므로 result.updated_count 가 1이면  result = success 를 보냄
+    # 6. 하나의 영화만 영향을 받아야 하므로 result.modified_count가 1이면 success를 보냅니다.
     if result.modified_count == 1:
-        return jsonify({'result': 'success'})
+        return jsonify({'result': 'success', 'msg': '좋아요 완료!'})
     else:
-        return jsonify({'result': 'failure'})
+        return jsonify({'result': 'failure', 'msg': '좋아요 처리에 실패했습니다.'})
 
 
 # API #4: 영화를 휴지통으로 보냅니다 (Soft Delete).

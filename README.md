@@ -530,11 +530,11 @@ python -m unittest discover tests/integration
 - [x] test: 휴지통 기능 통합 테스트 작성 및 검증
 
 #### 🌿 Branch: `feature/like-function` (좋아요 기능 완성)
-- [ ] feat: 백엔드 - POST /api/like에 title 매개변수 받도록 수정
-- [ ] feat: 프론트엔드 - likeMovie(title) 함수에 매개변수 추가
-- [ ] feat: 카드 버튼 onclick에 title 전달하도록 수정
-- [ ] fix: 특정 영화에만 좋아요가 적용되도록 수정
-- [ ] test: 좋아요 기능 통합 테스트 작성
+- [x] feat: 백엔드 - POST /api/like에 title 매개변수 받도록 수정
+- [x] feat: 프론트엔드 - likeMovie(title) 함수에 매개변수 추가
+- [x] feat: 카드 버튼 onclick에 title 전달하도록 수정 (이미 완료되어 있음)
+- [x] fix: 특정 영화에만 좋아요가 적용되도록 수정
+- [x] test: 좋아요 기능 통합 테스트 작성
 
 #### 🎨 Branch: `style/ui-enhancement` (UI 개선)
 - [ ] style: 영화 포스터 이미지 실제 URL로 교체 (현재 고양이 이미지)
