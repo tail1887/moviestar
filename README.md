@@ -60,6 +60,12 @@
     - [✅ Roadmap \& Progress](#-roadmap--progress)
       - [🌱 Branch: `main`](#-branch-main)
       - [🌿 Branch: `feature/sort-function` (정렬 기능 완성)](#-branch-featuresort-function-정렬-기능-완성)
+      - [🌿 Branch: `feature/trash-function` (휴지통 기능)](#-branch-featuretrash-function-휴지통-기능)
+      - [🌿 Branch: `feature/like-function` (좋아요 기능 완성)](#-branch-featurelike-function-좋아요-기능-완성)
+      - [🎨 Branch: `style/ui-enhancement` (UI 개선)](#-branch-styleui-enhancement-ui-개선)
+      - [🐛 Branch: `fix/error-handling` (에러 처리)](#-branch-fixerror-handling-에러-처리)
+      - [📝 Merge to `main`](#-merge-to-main)
+  - [🔍 Troubleshooting \& Challenges](#-troubleshooting--challenges)
   - [📝 License](#-license)
 
 ---
@@ -502,12 +508,67 @@ python -m unittest discover tests/integration
 
 #### 🌱 Branch: `main`
 - [x] Initial commit: 프로젝트 기본 구조 및 README 작성 완료
+  - Flask 서버 및 MongoDB 연결 설정
+  - init_db.py 스크래핑 로직 완성
+  - GET /api/list, POST /api/like 기본 구조
+  - HTML/CSS/JS 기본 UI 구현
+  - jQuery AJAX 영화 목록 표시 기능
 
 #### 🌿 Branch: `feature/sort-function` (정렬 기능 완성)
 - [x] feat: 백엔드 - GET /api/list에 .sort() 로직 추가 (likes, viewers, date)
 - [x] feat: 프론트엔드 - displaySorter() 함수 완성 (active 클래스 추가)
 - [x] feat: 개봉일 순 정렬 기능 구현 (open_year, open_month, open_day 활용)
 - [x] test: 정렬 기능 통합 테스트 작성
+
+#### 🌿 Branch: `feature/trash-function` (휴지통 기능)
+- [x] feat: 백엔드 - POST /api/delete 엔드포인트 추가
+- [x] feat: 백엔드 - GET /api/list/trash 엔드포인트 추가
+- [x] feat: 프론트엔드 - trashMovie(title) 함수 완성
+- [x] feat: 프론트엔드 - displayTrashMode(trashMode) 함수 완성
+- [x] feat: 프론트엔드 - enterTrashMode()/exitTrashMode() 함수 추가
+- [x] feat: 카드 버튼 onclick에 title 매개변수 전달 추가
+- [x] test: 휴지통 기능 통합 테스트 작성 및 검증
+
+#### 🌿 Branch: `feature/like-function` (좋아요 기능 완성)
+- [ ] feat: 백엔드 - POST /api/like에 title 매개변수 받도록 수정
+- [ ] feat: 프론트엔드 - likeMovie(title) 함수에 매개변수 추가
+- [ ] feat: 카드 버튼 onclick에 title 전달하도록 수정
+- [ ] fix: 특정 영화에만 좋아요가 적용되도록 수정
+- [ ] test: 좋아요 기능 통합 테스트 작성
+
+#### 🎨 Branch: `style/ui-enhancement` (UI 개선)
+- [ ] style: 영화 포스터 이미지 실제 URL로 교체 (현재 고양이 이미지)
+- [ ] style: 영화 카드 레이아웃 최적화
+- [ ] style: 반응형 디자인 적용
+
+#### 🐛 Branch: `fix/error-handling` (에러 처리)
+- [ ] fix: API 에러 응답 처리
+- [ ] fix: MongoDB 연결 실패 시 에러 처리
+- [ ] fix: 데이터 검증 및 예외 처리
+
+#### 📝 Merge to `main`
+- [ ] 모든 기능 브랜치 병합 완료
+- [ ] 통합 테스트 완료
+- [ ] docs: 최종 트러블슈팅 및 문서화
+
+---
+
+## 🔍 Troubleshooting & Challenges
+
+<details>
+<summary><b>1. 데이터 삭제 방식에 대한 고민 (Soft Delete vs Hard Delete)</b></summary>
+
+- **상황**: 사용자가 영화를 삭제할 때 DB에서 데이터를 영구 삭제할지 고민함.
+- **선택**: `trashed` 플래그를 사용하는 **Soft Delete** 방식 채택.
+- **이유**: 추후 휴지통 복구 기능을 확장할 수 있고, 사용자 데이터 실수 삭제를 방지하기 위함.
+</details>
+
+<details>
+<summary><b>2. 좋아요 클릭 시 화면 깜빡임 최적화</b></summary>
+
+- **상황**: 좋아요를 누를 때마다 `window.location.reload()`를 사용하니 사용자 경험이 저하됨.
+- **해결**: (추후 구현 시) AJAX 성공 콜백에서 해당 카드의 숫자만 jQuery로 변경하도록 개선 예정.
+</details>
 
 ---
 

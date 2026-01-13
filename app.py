@@ -77,6 +77,26 @@ def show_movies():
     return jsonify({'result': 'success', 'movies_list': movies})
 
 
+# API #2-1: 휴지통에 있는 영화 목록을 반환합니다.
+@app.route('/api/list/trash', methods=['GET'])
+def show_trashed_movies():
+    # client 에서 요청한 정렬 방식이 있는지를 확인합니다. 없다면 기본으로 좋아요 순으로 정렬합니다.
+    sortMode = request.args.get('sortMode', 'likes')
+
+    # 1. db에서 trashed 가 True인 movies 목록을 검색합니다.
+    if sortMode == 'likes':
+        movies = list(db.movies.find({'trashed': True}, {}).sort('likes', -1))  # 좋아요 많은 순
+    elif sortMode == 'viewers':
+        movies = list(db.movies.find({'trashed': True}, {}).sort('viewers', -1))  # 관객수 많은 순
+    elif sortMode == 'date':
+        # 개봉일 순서: 연도 → 월 → 일 순으로 내림차순 정렬 (최신순)
+        movies = list(db.movies.find({'trashed': True}, {}).sort([('open_year', -1), ('open_month', -1), ('open_day', -1)]))
+    else:
+        return jsonify({'result': 'failure', 'msg': '지원하지 않는 정렬 방식입니다.'})
+
+    # 2. 성공하면 success 메시지와 함께 movies_list 목록을 클라이언트에 전달합니다.
+    return jsonify({'result': 'success', 'movies_list': movies})
+
 # API #3: 영화에 좋아요 숫자를 하나 올립니다.
 @app.route('/api/like', methods=['POST'])
 def like_movie():
@@ -97,6 +117,29 @@ def like_movie():
         return jsonify({'result': 'success'})
     else:
         return jsonify({'result': 'failure'})
+
+
+# API #4: 영화를 휴지통으로 보냅니다 (Soft Delete).
+@app.route('/api/delete', methods=['POST'])
+def delete_movie():
+    # 1. 클라이언트로부터 title_give를 받습니다.
+    title_receive = request.form.get('title_give')
+    
+    # 2. 입력값 검증
+    if not title_receive:
+        return jsonify({'result': 'failure', 'msg': '영화 제목이 전달되지 않았습니다.'})
+    
+    # 3. movies 목록에서 해당 제목의 영화를 찾아 trashed를 True로 변경합니다.
+    result = db.movies.update_one(
+        {'title': title_receive},
+        {'$set': {'trashed': True}}
+    )
+    
+    # 4. 하나의 영화만 영향을 받아야 하므로 result.modified_count가 1이면 success를 보냅니다.
+    if result.modified_count == 1:
+        return jsonify({'result': 'success', 'msg': '삭제 완료!'})
+    else:
+        return jsonify({'result': 'failure', 'msg': '해당 영화를 찾을 수 없거나 이미 삭제되었습니다.'})
 
 
 if __name__ == '__main__':

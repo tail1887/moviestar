@@ -100,7 +100,19 @@
                         },
                     })
                 } else {
-                    alert('여러분이 휴지통 보기 API 를 만들어서 query 를 보내야 합니다.\n그 결과를 addMovieCards() 함수로 넘겨주면 됩니다.')
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/list/trash",
+                        data: {'sortMode': sortMode},
+                        success: function(response) {
+                            if (response['result'] != 'success') {
+                                alert(sortMode + ' 순으로 휴지통 영화 목록 받아오기 실패!')
+                                return
+                            }
+                            let movies = response['movies_list']
+                            addMovieCards(movies, true)
+                        },
+                    })
                 }
             }
 
@@ -128,19 +140,19 @@
                     let cardFooterHtml = ''
                     if (trashMode == false) {
                         cardFooterHtml = `
-                            <a href="#" onclick="likeMovie()">
+                            <a href="#" onclick="likeMovie('${title}')">
                             위로!
                             </a>
-                            <a href="#" onclick="trashMovie()">
+                            <a href="#" onclick="trashMovie('${title}')">
                             휴지통으로
                             </a>
                         `
                     } else {
                         cardFooterHtml = `
-                            <a href="#" onclick="restoreMovie()">
+                            <a href="#" onclick="restoreMovie('${title}')">
                             복구하기
                             </a>
-                            <a href="#" onclick="deleteMovie()">
+                            <a href="#" onclick="deleteMovie('${title}')">
                             영구삭제
                             </a>
                         `
@@ -177,8 +189,20 @@
                 });
             }
 
-            function trashMovie() {
-                alert('휴지통 보내기 기능을 직접 구현해보세요.\n서버 측에 API 를 추가 후 여기서 그 API 를 호출하면 됩니다.')
+            function trashMovie(title) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/delete",
+                    data: {'title_give': title},
+                    success: function (response) {
+                        if (response['result'] == 'success') {
+                            alert(response['msg'])
+                            showMovie()
+                        } else {
+                            alert(response['msg'])
+                        }
+                    }
+                });
             }
 
             function restoreMovie() {
@@ -219,6 +243,29 @@
 
             function displayTrashMode(trashMode) {
                 // trashMode 에 따라 "휴지통 보기" 또는 "휴지통 나가기" 가 출력 되게 구현해야 됩니다.
+                $('#trash-mode-box').empty()
+                
+                if (trashMode == false) {
+                    $('#trash-mode-box').append(`
+                        <a href="#" class="btn btn-secondary" onclick="enterTrashMode()">휴지통 보기</a>
+                    `)
+                } else {
+                    $('#trash-mode-box').append(`
+                        <a href="#" class="btn btn-secondary" onclick="exitTrashMode()">휴지통 나가기</a>
+                    `)
+                }
+            }
+
+            function enterTrashMode() {
+                trashMode = true
+                displayTrashMode(trashMode)
+                showMovie()
+            }
+
+            function exitTrashMode() {
+                trashMode = false
+                displayTrashMode(trashMode)
+                showMovie()
             }
 
         </script>
