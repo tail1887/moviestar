@@ -121,19 +121,29 @@
                 for (let i = 0; i < movies.length; i++) {
                     let movie = movies[i]
 
-                    // 1. movie[i] 요소의 title,viewers, likes 키 값을 활용하여 값을 조회합니다.
+                    // 1. movie[i] 요소의 정보를 조회합니다.
                     let id = movie['_id']
                     let title = movie['title']
+                    let poster_url = movie['poster_url']
                     let viewers = movie['viewers']
                     let likes = movie['likes']
+                    let open_year = movie['open_year']
+                    let open_month = movie['open_month']
+                    let open_day = movie['open_day']
+                    
+                    // 개봉일 포맷팅 (YYYY.MM.DD)
+                    let open_date = `${open_year}.${String(open_month).padStart(2, '0')}.${String(open_day).padStart(2, '0')}`
+                    
+                    // 관객수 천 단위 콤마 포맷팅
+                    let viewers_formatted = viewers.toLocaleString()
 
                     // 2. 영화 카드를 만듭니다.
                     let cardContentHtml = `
-                        <img src="${poster_url}" class="movie-poster" alt="${title} 포스터"/>
+                        <img src="${poster_url}" class="movie-poster" alt="${title} 포스터" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"/>
                         <span class="movie-title">${title}</span>
                         <span class="icon"><i class="fas fa-thumbs-up"></i></span><span class="movie-likes">${likes}</span>
-                        누적관객수 <span class="movie-viewers">${viewers}</span> 명
-                        개봉일 <span class="movie-date"></span>
+                        누적관객수 <span class="movie-viewers">${viewers_formatted}</span> 명
+                        개봉일 <span class="movie-date">${open_date}</span>
                     `
 
                     // 3. 휴지통을 보고 있는지 여부에 따라 카드의 버튼을 다르게 설정해줍니다.
