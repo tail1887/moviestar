@@ -537,9 +537,10 @@ python -m unittest discover tests/integration
 - [x] test: 좋아요 기능 통합 테스트 작성
 
 #### 🎨 Branch: `style/ui-enhancement` (UI 개선)
-- [ ] style: 영화 포스터 이미지 실제 URL로 교체 (현재 고양이 이미지)
-- [ ] style: 영화 카드 레이아웃 최적화
-- [ ] style: 반응형 디자인 적용
+- [x] style: 영화 포스터 이미지 실제 URL로 교체 및 alt 속성 추가
+- [x] style: 개봉일 포맷팅 (YYYY.MM.DD) 및 관객수 천 단위 콤마 추가
+- [x] style: 이미지 로드 실패 시 대체 이미지 표시 (onerror 처리)
+- [ ] style: 반응형 디자인 적용 (추후 구현 예정)
 
 #### 🐛 Branch: `fix/error-handling` (에러 처리)
 - [ ] fix: API 에러 응답 처리
