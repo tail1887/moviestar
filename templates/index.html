@@ -202,9 +202,19 @@
 
             // 정렬 기준에 따라 해당 버튼만 활성화 시키고 다른 버튼은 비활성화 시킴
             function displaySorter() {
+                // 먼저 모든 버튼의 active 클래스 제거
                 document.getElementById("sorter-likes").classList.remove("active")
                 document.getElementById("sorter-viewers").classList.remove("active")
                 document.getElementById("sorter-date").classList.remove("active")
+                
+                // 현재 정렬 모드에 해당하는 버튼에만 active 클래스 추가
+                if (sortMode === Sort.BY_LIKES) {
+                    document.getElementById("sorter-likes").classList.add("active")
+                } else if (sortMode === Sort.BY_VIEWERS) {
+                    document.getElementById("sorter-viewers").classList.add("active")
+                } else if (sortMode === Sort.BY_DATE) {
+                    document.getElementById("sorter-date").classList.add("active")
+                }
             }
 
             function displayTrashMode(trashMode) {
