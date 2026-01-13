@@ -55,6 +55,11 @@
       - [통합 테스트만 실행](#통합-테스트만-실행)
     - [테스트 커버리지](#테스트-커버리지)
     - [테스트 작성 가이드](#테스트-작성-가이드)
+  - [10. Development Guide \& Progress](#10-development-guide--progress)
+    - [📌 Commit Message Convention](#-commit-message-convention)
+    - [✅ Roadmap \& Progress](#-roadmap--progress)
+      - [🌱 Branch: `main`](#-branch-main)
+      - [🌿 Branch: `feature/sort-function` (정렬 기능 완성)](#-branch-featuresort-function-정렬-기능-완성)
   - [📝 License](#-license)
 
 ---
@@ -477,6 +482,32 @@ python -m unittest discover tests/integration
 - 파일명: `test_*.py` 형식
 - 클래스명: `Test*` 형식
 - 메서드명: `test_*` 형식
+
+---
+
+## 10. Development Guide & Progress
+
+프로젝트의 일관성을 위해 아래의 커밋 컨벤션을 준수하며 개발을 진행합니다.
+
+### 📌 Commit Message Convention
+
+- **feat**: 새로운 기능 추가
+- **fix**: 버그 수정
+- **docs**: 문서 수정 (README, 주석 등)
+- **style**: 코드 포맷팅, UI 스타일 변경 (로직 변경 없음)
+- **refactor**: 코드 리팩토링 (기능은 동일하나 구조 개선)
+- **test**: 테스트 코드 추가/수정
+
+### ✅ Roadmap & Progress
+
+#### 🌱 Branch: `main`
+- [x] Initial commit: 프로젝트 기본 구조 및 README 작성 완료
+
+#### 🌿 Branch: `feature/sort-function` (정렬 기능 완성)
+- [x] feat: 백엔드 - GET /api/list에 .sort() 로직 추가 (likes, viewers, date)
+- [x] feat: 프론트엔드 - displaySorter() 함수 완성 (active 클래스 추가)
+- [x] feat: 개봉일 순 정렬 기능 구현 (open_year, open_month, open_day 활용)
+- [x] test: 정렬 기능 통합 테스트 작성
 
 ---
 
