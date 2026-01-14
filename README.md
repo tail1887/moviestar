@@ -543,9 +543,9 @@ python -m unittest discover tests/integration
 - [ ] style: 반응형 디자인 적용 (추후 구현 예정)
 
 #### 🐛 Branch: `fix/error-handling` (에러 처리)
-- [ ] fix: API 에러 응답 처리
-- [ ] fix: MongoDB 연결 실패 시 에러 처리
-- [ ] fix: 데이터 검증 및 예외 처리
+- [x] fix: API 에러 응답 처리
+- [x] fix: MongoDB 연결 실패 시 에러 처리
+- [x] fix: 데이터 검증 및 예외 처리
 
 #### 📝 Merge to `main`
 - [ ] 모든 기능 브랜치 병합 완료
