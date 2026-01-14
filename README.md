@@ -564,7 +564,81 @@ python -m unittest discover tests/integration
 </details>
 
 <details>
-<summary><b>2. 좋아요 클릭 시 화면 깜빡임 최적화</b></summary>
+<summary><b>2. 좋아요 클릭 시 모든 영화의 좋아요가 증가하는 버그</b></summary>
+
+- **상황**: 특정 영화의 "위로!" 버튼을 클릭했는데 모든 영화의 좋아요 수가 증가하는 버그 발생.
+- **원인**: 
+  - 프론트엔드에서 `likeMovie()` 함수가 영화 제목을 매개변수로 받지 않음
+  - 백엔드 API가 특정 영화를 식별하지 못하고 임의의 영화를 업데이트
+- **해결**: 
+  - `likeMovie(title)` 함수에 title 매개변수 추가
+  - 백엔드에서 `request.form.get('title_give')`로 특정 영화 식별
+  - MongoDB 쿼리에 `{'title': title_receive}` 필터 조건 추가
+- **학습**: 사용자 액션이 특정 데이터에만 영향을 주도록 식별자 전달이 필수적임을 깨달음.
+</details>
+
+<details>
+<summary><b>3. 기능 브랜치 개발 순서 및 의존성 문제</b></summary>
+
+- **상황**: feature/trash-function과 feature/sort-function을 병렬로 개발하려다가 의존성 문제 발견.
+- **문제**: 
+  - trash 기능이 sort 기능에 의존 (휴지통 목록도 정렬이 필요)
+  - 순서 없이 개발하면 나중에 큰 리팩토링 필요
+- **해결**: 
+  - feature/sort-function을 먼저 완성하고 main에 병합
+  - 그 후 feature/trash-function 개발 시작
+- **교훈**: 기능 간 의존성을 미리 파악하고 개발 순서를 결정해야 불필요한 작업을 줄일 수 있음.
+</details>
+
+<details>
+<summary><b>4. PR 병합 시 README.md 충돌 해결</b></summary>
+
+- **상황**: feature/trash-function PR 병합 시 README.md에서 충돌 발생.
+- **원인**: 
+  - feature/sort-function이 먼저 병합되어 README 업데이트
+  - feature/trash-function도 독립적으로 README 업데이트
+  - 두 브랜치 모두 같은 Progress 섹션을 수정
+- **해결**: 
+  - `git merge main`으로 로컬에서 충돌 해결
+  - 수동으로 두 브랜치의 변경사항 모두 포함하도록 편집
+  - 충돌 해결 후 커밋하고 푸시
+- **학습**: 
+  - 병렬 개발 시 충돌은 자연스러운 현상
+  - 충돌 해결 시 양쪽 변경사항을 모두 확인하고 통합하는 것이 중요
+</details>
+
+<details>
+<summary><b>5. PR 템플릿 파일 위치에 대한 고민</b></summary>
+
+- **상황**: 일관된 PR 작성을 위한 템플릿이 필요했고, 어느 브랜치에서 추가할지 고민.
+- **시행착오**: 
+  - 처음에는 feature 브랜치(style/ui-enhancement)에서 `.github/pull_request_template.md` 생성
+  - PR 템플릿은 개별 기능이 아닌 프로젝트 전체 설정임을 깨달음
+- **해결**: 
+  - feature 브랜치에서 생성한 파일 삭제
+  - main 브랜치에서 직접 추가하고 커밋
+- **교훈**: 프로젝트 전역 설정 파일(템플릿, CI/CD 등)은 main 브랜치에서 관리하는 것이 적절.
+</details>
+
+<details>
+<summary><b>6. 에러 처리 구현 순서의 중요성</b></summary>
+
+- **상황**: fix/error-handling 브랜치에서 에러 처리를 한번에 추가하려다 롤백.
+- **문제**: 
+  - README의 순서와 다르게 모든 에러 처리를 동시에 구현
+  - 커밋 히스토리가 불명확하고 리뷰가 어려움
+- **해결**: 
+  - README에 명시된 순서대로 3개의 커밋으로 분리
+  1. fix: API 에러 응답 처리 (프론트엔드 AJAX error 콜백)
+  2. fix: MongoDB 연결 실패 시 에러 처리
+  3. fix: 데이터 검증 및 예외 처리 (백엔드 try-except)
+- **교훈**: 
+  - 문서화된 계획을 따르면 일관성 있는 개발 가능
+  - 작은 단위로 커밋하면 리뷰와 디버깅이 용이
+</details>
+
+<details>
+<summary><b>7. 좋아요 클릭 시 화면 깜빡임 최적화</b></summary>
 
 - **상황**: 좋아요를 누를 때마다 `window.location.reload()`를 사용하니 사용자 경험이 저하됨.
 - **해결**: (추후 구현 시) AJAX 성공 콜백에서 해당 카드의 숫자만 jQuery로 변경하도록 개선 예정.
