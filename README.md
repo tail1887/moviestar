@@ -540,7 +540,6 @@ python -m unittest discover tests/integration
 - [x] style: 영화 포스터 이미지 실제 URL로 교체 및 alt 속성 추가
 - [x] style: 개봉일 포맷팅 (YYYY.MM.DD) 및 관객수 천 단위 콤마 추가
 - [x] style: 이미지 로드 실패 시 대체 이미지 표시 (onerror 처리)
-- [ ] style: 반응형 디자인 적용 (추후 구현 예정)
 
 #### 🐛 Branch: `fix/error-handling` (에러 처리)
 - [x] fix: API 에러 응답 처리
@@ -548,9 +547,9 @@ python -m unittest discover tests/integration
 - [x] fix: 데이터 검증 및 예외 처리
 
 #### 📝 Merge to `main`
-- [ ] 모든 기능 브랜치 병합 완료
-- [ ] 통합 테스트 완료
-- [ ] docs: 최종 트러블슈팅 및 문서화
+- [x] 모든 기능 브랜치 병합 완료
+- [x] 통합 테스트 완료
+- [x] 주요 기능 개발 완료 (정렬, 휴지통, 좋아요, UI 개선, 에러 처리)
 
 ---
 
