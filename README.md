@@ -637,13 +637,6 @@ python -m unittest discover tests/integration
   - 작은 단위로 커밋하면 리뷰와 디버깅이 용이
 </details>
 
-<details>
-<summary><b>7. 좋아요 클릭 시 화면 깜빡임 최적화</b></summary>
-
-- **상황**: 좋아요를 누를 때마다 `window.location.reload()`를 사용하니 사용자 경험이 저하됨.
-- **해결**: (추후 구현 시) AJAX 성공 콜백에서 해당 카드의 숫자만 jQuery로 변경하도록 개선 예정.
-</details>
-
 ---
 
 ## 📝 License
