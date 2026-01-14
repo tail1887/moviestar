@@ -10,8 +10,17 @@ import sys
 
 app = Flask(__name__)
 
-client = MongoClient('localhost', 27017)
-db = client.dbjungle
+# MongoDB 연결 시도 및 에러 처리
+try:
+    client = MongoClient('localhost', 27017, serverSelectionTimeoutMS=5000)
+    # 연결 테스트
+    client.admin.command('ping')
+    db = client.dbjungle
+    print("MongoDB 연결 성공")
+except Exception as e:
+    print(f"MongoDB 연결 실패: {e}")
+    print("MongoDB 서비스가 실행 중인지 확인하세요.")
+    sys.exit(1)
 
 
 #####################################################################################
