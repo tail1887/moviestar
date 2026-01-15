@@ -61,20 +61,11 @@ jobs:
             echo "📊 컨테이너 상태:"
             sudo docker-compose ps
             
-            # DB 초기화 확인 (Python 사용)
+            # DB 초기화 확인 (간단한 스크립트 사용)
             echo "🔍 DB 초기화 확인..."
-            echo "Python 명령어 실행 중..."
+            MOVIE_COUNT=$(sudo docker-compose exec -T app python check_db.py 2>&1 | tail -1 | tr -d '\r')
+            echo "현재 영화 개수: [$MOVIE_COUNT]"
             
-            sudo docker-compose exec -T app python -c 'from pymongo import MongoClient; import os; client = MongoClient(os.getenv("MONGO_HOST", "mongodb"), 27017); db = client.dbjungle; count = db.movies.count_documents({}); print(f"MOVIE_COUNT:{count}")' > /tmp/db_check.txt 2>&1 || true
-            
-            echo "=== 출력 결과 ==="
-            cat /tmp/db_check.txt || echo "파일 없음"
-            echo "=== 파싱 시작 ==="
-            
-            MOVIE_COUNT=$(grep "MOVIE_COUNT:" /tmp/db_check.txt 2>/dev/null | cut -d':' -f2 || echo "0")
-            echo ">>> 현재 영화 개수: [$MOVIE_COUNT]"
-            
-            echo "=== 조건 확인 ==="
             if [ "$MOVIE_COUNT" = "0" ]; then
               echo "📊 DB 초기화 시작..."
               sudo docker-compose exec -T app python init_db.py
@@ -82,8 +73,6 @@ jobs:
             else
               echo "✅ DB 이미 초기화됨 (${MOVIE_COUNT}개)"
             fi
-            
-            echo "=== 배포 완료 ==="
             
             echo "🎉 배포 완료!"
             sudo docker-compose ps
