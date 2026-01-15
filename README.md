@@ -547,10 +547,23 @@ python -m unittest discover tests/integration
 - [x] fix: MongoDB 연결 실패 시 에러 처리
 - [x] fix: 데이터 검증 및 예외 처리
 
+#### � Branch: `chore/docker` (Docker 환경 구축)
+- [x] chore: Dockerfile, docker-compose.yml 추가
+- [x] chore: .dockerignore 파일 생성
+- [x] chore: GitHub Actions CI 파이프라인 추가 (.github/workflows/test.yml)
+- [x] fix: CI Python 버전을 3.10으로 변경 (click 패키지 호환성)
+- [x] docs: README에 chore 커밋 컨벤션 추가
+
+#### 🐛 Branch: `fix/docker-env-config` (Docker 환경 설정 수정)
+- [x] fix: Dockerfile Python 버전 3.9 → 3.10으로 수정
+- [x] fix: app.py, init_db.py에 환경변수 기반 MongoDB 연결 추가
+- [x] fix: Docker 네트워크에서 'mongodb' 호스트명 사용하도록 수정
+
 #### 📝 Merge to `main`
 - [x] 모든 기능 브랜치 병합 완료
 - [x] 통합 테스트 완료
 - [x] 주요 기능 개발 완료 (정렬, 휴지통, 좋아요, UI 개선, 에러 처리)
+- [x] Docker 환경 및 CI/CD 파이프라인 구축 완료
 
 ---
 
@@ -636,6 +649,40 @@ python -m unittest discover tests/integration
 - **교훈**: 
   - 문서화된 계획을 따르면 일관성 있는 개발 가능
   - 작은 단위로 커밋하면 리뷰와 디버깅이 용이
+</details>
+
+<details>
+<summary><b>7. main 브랜치에서 직접 작업한 실수</b></summary>
+
+- **상황**: Docker 환경 설정을 수정하다가 main 브랜치에서 직접 코드를 변경함.
+- **문제**: 
+  - 안정적인 main 브랜치에 테스트되지 않은 코드가 추가될 뻔함
+  - Git 워크플로우 원칙 위반
+- **해결**: 
+  - `git checkout -b fix/docker-env-config`로 새 브랜치 생성
+  - 수정사항을 새 브랜치에 커밋하고 푸시
+  - PR을 통해 CI 검증 후 병합 예정
+- **학습**: 
+  - 어떤 작업이든 main 브랜치에서 직접 수정하지 말 것
+  - 작은 수정도 별도 브랜치에서 작업하는 습관이 중요
+  - main은 항상 배포 가능한 안정적인 상태를 유지해야 함
+</details>
+
+<details>
+<summary><b>8. Docker 컨테이너 네트워크 환경 이해</b></summary>
+
+- **상황**: docker-compose로 실행했는데 Flask 앱이 MongoDB에 연결하지 못하는 오류 발생.
+- **원인**: 
+  - app.py와 init_db.py가 하드코딩된 `localhost:27017`로 연결 시도
+  - Docker 네트워크 내부에서는 서비스 이름(`mongodb`)을 호스트로 사용해야 함
+- **해결**: 
+  - 환경변수 `MONGO_HOST`, `MONGO_PORT`로 유연하게 설정
+  - docker-compose.yml에서 환경변수 주입
+  - 로컬 개발 시 기본값 `localhost` 유지
+- **교훈**: 
+  - 컨테이너화된 환경에서는 네트워크 구조가 다름
+  - 환경변수를 활용하면 다양한 환경에서 동일 코드 사용 가능
+  - Docker Compose는 서비스 이름으로 자동 DNS 해석 제공
 </details>
 
 ---
