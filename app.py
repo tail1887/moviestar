@@ -6,13 +6,16 @@ from flask.json.provider import JSONProvider
 
 import json
 import sys
+import os
 
 
 app = Flask(__name__)
 
 # MongoDB 연결 시도 및 에러 처리
 try:
-    client = MongoClient('localhost', 27017, serverSelectionTimeoutMS=5000)
+    mongo_host = os.getenv('MONGO_HOST', 'localhost')
+    mongo_port = int(os.getenv('MONGO_PORT', 27017))
+    client = MongoClient(mongo_host, mongo_port, serverSelectionTimeoutMS=5000)
     # 연결 테스트
     client.admin.command('ping')
     db = client.dbjungle
