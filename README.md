@@ -503,6 +503,7 @@ python -m unittest discover tests/integration
 - **style**: 코드 포맷팅, UI 스타일 변경 (로직 변경 없음)
 - **refactor**: 코드 리팩토링 (기능은 동일하나 구조 개선)
 - **test**: 테스트 코드 추가/수정
+- **chore**: 빌드, 배포, 개발 환경 설정 등 기타 작업
 
 ### ✅ Roadmap & Progress
 
