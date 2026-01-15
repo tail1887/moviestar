@@ -5,6 +5,15 @@ on:
     branches:
       - main
   workflow_dispatch:  # 수동 실행 가능
+    inputs:
+      clear_db:
+        description: '🧪 DB 초기화 테스트 (기존 데이터 삭제)'
+        required: false
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+        default: 'false'
 
 jobs:
   deploy:
@@ -53,6 +62,15 @@ jobs:
             
             # 새 이미지 빌드 및 컨테이너 시작 (앱이 자동으로 DB 초기화)
             sudo docker-compose up -d --build
+            
+            # 테스트용: DB 데이터 삭제 (수동 실행 시에만)
+            if [ "${{ github.event.inputs.clear_db }}" = "true" ]; then
+              echo "🧪 테스트 모드: DB 데이터 삭제 중..."
+              sleep 5
+              sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})"
+              echo "✅ 데이터 삭제 완료. 앱 재시작하여 자동 초기화..."
+              sudo docker-compose restart app
+            fi
             
             # 컨테이너 시작 대기
             echo "⏳ 컨테이너 시작 대기 중..."
