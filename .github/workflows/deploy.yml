@@ -18,6 +18,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-to-ec2
+      cancel-in-progress: false  # 이전 배포가 끝날 때까지 대기
     
     steps:
       - name: Checkout code
