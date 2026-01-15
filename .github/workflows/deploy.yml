@@ -1,0 +1,90 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # 수동 실행 가능
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          # SSH 키 설정
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          # SSH 접속 및 배포
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} << 'ENDSSH'
+            set -e
+            
+            # 프로젝트 디렉토리로 이동 (없으면 생성)
+            mkdir -p ~/moviestar
+            cd ~/moviestar
+            
+            # Git 저장소 초기화 (최초 실행 시)
+            if [ ! -d .git ]; then
+              git clone https://github.com/${{ github.repository }} .
+            fi
+            
+            # 최신 코드 가져오기
+            git fetch origin
+            git reset --hard origin/main
+            
+            # 서버 초기 설정 (Docker 없을 경우 자동 설치)
+            if ! command -v docker &> /dev/null; then
+              echo "🔧 서버 초기 설정 실행..."
+              chmod +x setup-server.sh
+              ./setup-server.sh
+            fi
+            
+            # Docker 컨테이너 중지 및 삭제
+            docker-compose down || true
+            
+            # 새 이미지 빌드 및 컨테이너 시작
+            docker-compose up -d --build
+            
+            # 컨테이너 시작 대기
+            sleep 5
+            
+            # DB 초기화 여부 확인 (movies 컬렉션이 비어있으면 초기화)
+            DB_COUNT=$(docker-compose exec -T mongodb mongosh --quiet --eval "db.getSiblingDB('dbjungle').movies.countDocuments()" || echo "0")
+            if [ "$DB_COUNT" = "0" ]; then
+              echo "📊 데이터베이스 초기화 중..."
+              docker-compose exec -T app python init_db.py
+            else
+              echo "✅ 데이터베이스 이미 초기화되어 있음 (영화 수: $DB_COUNT)"
+            fi
+            
+            # 배포 완료 확인
+            echo "🎉 배포 완료!"
+            docker-compose ps
+          ENDSSH
+          
+          # SSH 키 삭제
+          rm -f private_key.pem
+
+      - name: Verify Deployment
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          echo "🔍 배포 검증 중..."
+          sleep 3
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${HOST}:5000 || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ 배포 성공! 애플리케이션이 정상 작동 중입니다."
+            echo "🌐 URL: http://${HOST}:5000"
+          else
+            echo "⚠️ 배포 확인 필요 (HTTP Code: $HTTP_CODE)"
+            exit 1
+          fi
