@@ -51,33 +51,19 @@ jobs:
             # Docker 컨테이너 중지 및 삭제
             sudo docker-compose down || true
             
-            # 새 이미지 빌드 및 컨테이너 시작
+            # 새 이미지 빌드 및 컨테이너 시작 (앱이 자동으로 DB 초기화)
             sudo docker-compose up -d --build
             
-            # 컨테이너 시작 및 MongoDB 준비 대기
-            echo "⏳ MongoDB 준비 대기 중..."
+            # 컨테이너 시작 대기
+            echo "⏳ 컨테이너 시작 대기 중..."
             sleep 15
             
+            echo "🎉 배포 완료!"
             echo "📊 컨테이너 상태:"
             sudo docker-compose ps
             
-            # DB 초기화 확인 (timeout 추가)
-            echo "🔍 DB 초기화 확인..."
-            set +e  # 일시적으로 에러 무시
-            MOVIE_COUNT=$(timeout 10 sudo docker-compose exec -T app python check_db.py 2>/dev/null | tail -1 | tr -d '\r' || echo "0")
-            set -e  # 다시 에러 체크 활성화
-            echo "현재 영화 개수: [$MOVIE_COUNT]"
-            
-            if [ -z "$MOVIE_COUNT" ] || [ "$MOVIE_COUNT" = "0" ]; then
-              echo "📊 DB 초기화 시작..."
-              timeout 120 sudo docker-compose exec -T app python init_db.py || echo "⚠️ DB 초기화 타임아웃 또는 실패"
-              echo "✅ DB 초기화 완료!"
-            else
-              echo "✅ DB 이미 초기화됨 (${MOVIE_COUNT}개)"
-            fi
-            
-            echo "🎉 배포 완료!"
-            sudo docker-compose ps
+            echo "📝 앱 시작 로그 (DB 자동 초기화 확인):"
+            sudo docker-compose logs --tail=40 app
           ENDSSH
           
           # SSH 키 삭제

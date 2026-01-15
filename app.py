@@ -20,6 +20,22 @@ try:
     client.admin.command('ping')
     db = client.dbjungle
     print("MongoDB 연결 성공")
+    
+    # 앱 시작 시 자동 DB 초기화 (CD 파이프라인의 핵심!)
+    movie_count = db.movies.count_documents({})
+    if movie_count == 0:
+        print("📊 영화 데이터가 없습니다. 자동 초기화 시작...")
+        import subprocess
+        result = subprocess.run([sys.executable, 'init_db.py'], 
+                              capture_output=True, text=True)
+        if result.returncode == 0:
+            print("✅ DB 자동 초기화 완료!")
+            print(f"스크래핑된 영화: {db.movies.count_documents({})}개")
+        else:
+            print(f"⚠️ DB 초기화 중 경고: {result.stderr}")
+    else:
+        print(f"✅ 영화 데이터 확인 완료: {movie_count}개")
+        
 except Exception as e:
     print(f"MongoDB 연결 실패: {e}")
     print("MongoDB 서비스가 실행 중인지 확인하세요.")
