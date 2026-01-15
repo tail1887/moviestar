@@ -58,16 +58,9 @@ jobs:
             echo "⏳ MongoDB 준비 대기 중..."
             sleep 15
             
-            # DB 초기화 확인 및 실행 (더 간단하게)
+            # DB 초기화 확인 (Python 사용)
             echo "🔍 DB 초기화 확인..."
-            sudo docker-compose exec -T app python -c "
-from pymongo import MongoClient
-import os
-client = MongoClient(os.getenv('MONGO_HOST', 'mongodb'), 27017)
-db = client.dbjungle
-count = db.movies.count_documents({})
-print(f'MOVIE_COUNT:{count}')
-" > /tmp/db_check.txt 2>&1
+            sudo docker-compose exec -T app python -c 'from pymongo import MongoClient; import os; client = MongoClient(os.getenv("MONGO_HOST", "mongodb"), 27017); db = client.dbjungle; count = db.movies.count_documents({}); print(f"MOVIE_COUNT:{count}")' > /tmp/db_check.txt 2>&1
             
             MOVIE_COUNT=$(grep "MOVIE_COUNT:" /tmp/db_check.txt | cut -d':' -f2 || echo "0")
             echo "현재 영화 개수: $MOVIE_COUNT"
