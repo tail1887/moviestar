@@ -49,26 +49,26 @@ jobs:
             fi
             
             # Docker 컨테이너 중지 및 삭제
-            docker-compose down || true
+            sudo docker-compose down || true
             
             # 새 이미지 빌드 및 컨테이너 시작
-            docker-compose up -d --build
+            sudo docker-compose up -d --build
             
             # 컨테이너 시작 대기
             sleep 5
             
             # DB 초기화 여부 확인 (movies 컬렉션이 비어있으면 초기화)
-            DB_COUNT=$(docker-compose exec -T mongodb mongosh --quiet --eval "db.getSiblingDB('dbjungle').movies.countDocuments()" || echo "0")
+            DB_COUNT=$(sudo docker-compose exec -T mongodb mongosh --quiet --eval "db.getSiblingDB('dbjungle').movies.countDocuments()" || echo "0")
             if [ "$DB_COUNT" = "0" ]; then
               echo "📊 데이터베이스 초기화 중..."
-              docker-compose exec -T app python init_db.py
+              sudo docker-compose exec -T app python init_db.py
             else
               echo "✅ 데이터베이스 이미 초기화되어 있음 (영화 수: $DB_COUNT)"
             fi
             
             # 배포 완료 확인
             echo "🎉 배포 완료!"
-            docker-compose ps
+            sudo docker-compose ps
           ENDSSH
           
           # SSH 키 삭제
