@@ -47,6 +47,17 @@
     - [6️⃣ 애플리케이션 실행](#6️⃣-애플리케이션-실행)
     - [7️⃣ 브라우저에서 접속](#7️⃣-브라우저에서-접속)
     - [🛑 종료 방법](#-종료-방법)
+  - [8.5. Docker로 실행 (권장)](#85-docker로-실행-권장)
+    - [📋 사전 요구사항](#-사전-요구사항)
+    - [🚀 실행 방법](#-실행-방법)
+      - [1️⃣ 프로젝트 클론](#1️⃣-프로젝트-클론)
+      - [2️⃣ Docker 컨테이너 빌드 및 실행](#2️⃣-docker-컨테이너-빌드-및-실행)
+      - [3️⃣ 컨테이너 상태 확인](#3️⃣-컨테이너-상태-확인)
+      - [4️⃣ 데이터베이스 초기화](#4️⃣-데이터베이스-초기화)
+      - [5️⃣ 브라우저에서 접속](#5️⃣-브라우저에서-접속)
+    - [🔧 유용한 Docker 명령어](#-유용한-docker-명령어)
+    - [🆚 Docker vs 로컬 실행 비교](#-docker-vs-로컬-실행-비교)
+    - [💡 Docker 사용 팁](#-docker-사용-팁)
   - [9. 테스트 (Testing)](#9-테스트-testing)
     - [테스트 구조](#테스트-구조)
     - [테스트 실행 방법](#테스트-실행-방법)
@@ -439,6 +450,136 @@ http://localhost:5000
 - Flask 서버 종료: 터미널에서 `Ctrl + C`
 - 가상환경 비활성화: `deactivate`
 - MongoDB 서비스 중지: `Stop-Service -Name MongoDB`
+
+---
+
+## 8.5. Docker로 실행 (권장)
+
+Docker를 사용하면 복잡한 환경 설정 없이 애플리케이션을 실행할 수 있습니다.
+
+### 📋 사전 요구사항
+
+**Docker Desktop 설치**
+- [Docker Desktop 다운로드](https://www.docker.com/products/docker-desktop/)
+- Windows: WSL 2 백엔드 필요
+- 설치 후 Docker Desktop 실행 확인
+
+### 🚀 실행 방법
+
+#### 1️⃣ 프로젝트 클론
+
+```powershell
+git clone <repository-url>
+cd moviestar
+```
+
+#### 2️⃣ Docker 컨테이너 빌드 및 실행
+
+```powershell
+docker-compose up -d
+```
+
+이 명령어는:
+- Flask 애플리케이션과 MongoDB를 컨테이너로 실행
+- `-d` 옵션으로 백그라운드에서 실행
+- 자동으로 네트워크 및 볼륨 생성
+
+#### 3️⃣ 컨테이너 상태 확인
+
+```powershell
+docker-compose ps
+```
+
+정상 실행 시 출력 예시:
+```
+NAME                  IMAGE           STATUS       PORTS
+moviestar-app-1       moviestar-app   Up X minutes 0.0.0.0:5000->5000/tcp
+moviestar-mongodb-1   mongo:latest    Up X minutes 0.0.0.0:27017->27017/tcp
+```
+
+#### 4️⃣ 데이터베이스 초기화
+
+```powershell
+docker-compose exec app python init_db.py
+```
+
+영화 데이터가 자동으로 스크래핑되어 DB에 저장됩니다.
+
+#### 5️⃣ 브라우저에서 접속
+
+```
+http://localhost:5000
+```
+
+### 🔧 유용한 Docker 명령어
+
+**컨테이너 로그 확인**
+```powershell
+# Flask 앱 로그
+docker-compose logs app
+
+# MongoDB 로그
+docker-compose logs mongodb
+
+# 실시간 로그 모니터링
+docker-compose logs -f app
+```
+
+**컨테이너 재시작**
+```powershell
+docker-compose restart
+```
+
+**컨테이너 중지**
+```powershell
+docker-compose stop
+```
+
+**컨테이너 중지 및 삭제**
+```powershell
+docker-compose down
+```
+
+**컨테이너 및 볼륨 모두 삭제**
+```powershell
+# 주의: 저장된 데이터가 모두 삭제됩니다
+docker-compose down -v
+```
+
+**컨테이너 내부 접속**
+```powershell
+# Flask 앱 컨테이너
+docker-compose exec app bash
+
+# MongoDB 컨테이너
+docker-compose exec mongodb mongosh
+```
+
+### 🆚 Docker vs 로컬 실행 비교
+
+| 항목 | Docker | 로컬 실행 |
+|------|--------|----------|
+| **환경 설정** | 자동 (Dockerfile) | 수동 (Python, MongoDB 설치) |
+| **의존성 관리** | 컨테이너에 포함 | 가상환경 필요 |
+| **포트 충돌** | 격리된 네트워크 | 시스템 포트 직접 사용 |
+| **데이터 영속성** | Docker Volume | 로컬 파일시스템 |
+| **배포** | 동일 환경 보장 | 환경별 차이 가능 |
+| **시작 시간** | 느림 (빌드 필요) | 빠름 |
+
+### 💡 Docker 사용 팁
+
+- **개발 중 코드 변경 실시간 반영**: 현재 설정은 로컬 디렉토리를 컨테이너에 마운트하므로, 코드 수정 시 Flask의 debug 모드가 자동으로 재시작합니다.
+  - Python 파일(app.py 등) 수정: Flask가 자동 재시작
+  - HTML/CSS/JS 파일 수정: 브라우저 새로고침만으로 반영
+  - Dockerfile 또는 requirements.txt 수정 시에만 재빌드 필요:
+    ```powershell
+    docker-compose up -d --build
+    ```
+
+- **리소스 사용량 확인**:
+  ```powershell
+  docker stats
+  ```
 
 ---
 
