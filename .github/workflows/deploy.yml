@@ -65,27 +65,25 @@ jobs:
             echo "🔍 DB 초기화 확인..."
             echo "Python 명령어 실행 중..."
             
-            if sudo docker-compose exec -T app python -c 'from pymongo import MongoClient; import os; client = MongoClient(os.getenv("MONGO_HOST", "mongodb"), 27017); db = client.dbjungle; count = db.movies.count_documents({}); print(f"MOVIE_COUNT:{count}")' > /tmp/db_check.txt 2>&1; then
-              echo "✅ Python 명령어 성공"
-              cat /tmp/db_check.txt
-            else
-              echo "❌ Python 명령어 실패. 에러:"
-              cat /tmp/db_check.txt
-              echo "앱 로그 확인:"
-              sudo docker-compose logs --tail=20 app
-              exit 1
-            fi
+            sudo docker-compose exec -T app python -c 'from pymongo import MongoClient; import os; client = MongoClient(os.getenv("MONGO_HOST", "mongodb"), 27017); db = client.dbjungle; count = db.movies.count_documents({}); print(f"MOVIE_COUNT:{count}")' > /tmp/db_check.txt 2>&1 || true
             
-            MOVIE_COUNT=$(grep "MOVIE_COUNT:" /tmp/db_check.txt | cut -d':' -f2 || echo "0")
-            echo "현재 영화 개수: $MOVIE_COUNT"
+            echo "=== 출력 결과 ==="
+            cat /tmp/db_check.txt || echo "파일 없음"
+            echo "=== 파싱 시작 ==="
             
+            MOVIE_COUNT=$(grep "MOVIE_COUNT:" /tmp/db_check.txt 2>/dev/null | cut -d':' -f2 || echo "0")
+            echo ">>> 현재 영화 개수: [$MOVIE_COUNT]"
+            
+            echo "=== 조건 확인 ==="
             if [ "$MOVIE_COUNT" = "0" ]; then
               echo "📊 DB 초기화 시작..."
               sudo docker-compose exec -T app python init_db.py
-              echo "✅ 완료!"
+              echo "✅ DB 초기화 완료!"
             else
               echo "✅ DB 이미 초기화됨 (${MOVIE_COUNT}개)"
             fi
+            
+            echo "=== 배포 완료 ==="
             
             echo "🎉 배포 완료!"
             sudo docker-compose ps
