@@ -54,33 +54,55 @@ jobs:
             # 새 이미지 빌드 및 컨테이너 시작
             sudo docker-compose up -d --build
             
-            # 컨테이너 시작 대기 (MongoDB 준비 시간 포함)
+            # 컨테이너 시작 대기
             echo "⏳ 컨테이너 시작 대기 중..."
             sleep 10
             
-            # MongoDB 연결 대기
-            echo "🔍 MongoDB 연결 확인 중..."
-            for i in {1..30}; do
-              if sudo docker-compose exec -T mongodb mongosh --quiet --eval "db.version()" > /dev/null 2>&1; then
-                echo "✅ MongoDB 연결 성공!"
+            echo "📊 컨테이너 상태 확인:"
+            sudo docker-compose ps
+            
+            # MongoDB 준비 확인 (더 robust하게)
+            echo "🔍 MongoDB 준비 상태 확인 중..."
+            MAX_RETRIES=30
+            RETRY_COUNT=0
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              echo "시도 $((RETRY_COUNT+1))/$MAX_RETRIES..."
+              
+              # mongosh로 연결 테스트 (에러 출력)
+              if sudo docker-compose exec -T mongodb mongosh --quiet --eval "db.version()" 2>&1; then
+                echo "✅ MongoDB 준비 완료!"
                 break
+              else
+                echo "⚠️ MongoDB 아직 준비 안 됨, 2초 후 재시도..."
+                sleep 2
+                RETRY_COUNT=$((RETRY_COUNT+1))
               fi
-              echo "대기 중... ($i/30)"
-              sleep 2
             done
             
-            # DB 초기화 여부 확인 (movies 컬렉션이 비어있으면 초기화)
-            DB_COUNT=$(sudo docker-compose exec -T mongodb mongosh --quiet --eval "db.getSiblingDB('dbjungle').movies.countDocuments()" 2>/dev/null || echo "0")
-            if [ "$DB_COUNT" = "0" ]; then
-              echo "📊 데이터베이스 초기화 중..."
+            if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+              echo "❌ MongoDB 준비 타임아웃. 로그 확인:"
+              sudo docker-compose logs --tail=50 mongodb
+              exit 1
+            fi
+            
+            # DB 초기화 여부 확인
+            echo "🔍 데이터베이스 초기화 확인 중..."
+            DB_COUNT=$(sudo docker-compose exec -T mongodb mongosh --quiet --eval "db.getSiblingDB('dbjungle').movies.countDocuments()" 2>&1 | tail -1)
+            echo "현재 영화 데이터 개수: $DB_COUNT"
+            
+            if [ "$DB_COUNT" = "0" ] || [ -z "$DB_COUNT" ]; then
+              echo "📊 데이터베이스 초기화 시작..."
               sudo docker-compose exec -T app python init_db.py
+              echo "✅ 데이터베이스 초기화 완료!"
             else
-              echo "✅ 데이터베이스 이미 초기화되어 있음 (영화 수: $DB_COUNT)"
+              echo "✅ 데이터베이스 이미 초기화되어 있음 (영화 수: $DB_COUNT개)"
             fi
             
             # 배포 완료 확인
             echo "🎉 배포 완료!"
-            sudo docker-compose ps
+            echo "📝 최근 앱 로그:"
+            sudo docker-compose logs --tail=30 app
           ENDSSH
           
           # SSH 키 삭제
