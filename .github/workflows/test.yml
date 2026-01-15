@@ -1,0 +1,42 @@
+name: CI - Test
+
+on:
+  push:
+    branches: [ main, chore/docker ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run integration tests
+        run: |
+          python -m unittest discover tests/integration
+        env:
+          MONGO_HOST: localhost
+          MONGO_PORT: 27017
+      
+      - name: Test results
+        if: success()
+        run: echo "✅ All tests passed!"
