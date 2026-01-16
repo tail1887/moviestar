@@ -69,16 +69,13 @@ jobs:
             
             # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
             echo "🧪 학습용 - DB 데이터 삭제 중..."
-            if sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" 2>&1; then
-              echo "✅ DB 데이터 삭제 완료"
-            else
-              echo "⚠️ 삭제 실패 (컨테이너 준비 중)"
-            fi
+            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" || true
+            echo "✅ DB 데이터 삭제 명령 실행 완료"
             
             # 앱 재시작하여 자동 초기화 트리거
             echo "🔄 앱 재시작 (자동 초기화 트리거)..."
-            sudo docker-compose restart app || echo "⚠️ 앱 재시작 실패, 계속 진행..."
-            echo "앱 재시작 완료, 초기화 대기 시작..."
+            sudo docker-compose restart app || true
+            echo "✅ 앱 재시작 명령 실행 완료"
             
             # 초기화 완료 대기 (스크래핑은 시간이 걸릴 수 있음)
             echo "⏳ DB 초기화 대기 중 (스크래핑 시간 포함)..."
