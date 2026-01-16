@@ -18,9 +18,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    concurrency:
-      group: deploy-to-ec2
-      cancel-in-progress: false  # 이전 배포가 끝날 때까지 대기
     
     steps:
       - name: Checkout code
@@ -37,9 +34,8 @@ jobs:
           chmod 600 private_key.pem
           
           # SSH 접속 및 배포
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
-            # set -e 제거: 일부 명령 실패 시에도 계속 진행
-            set -x  # 디버깅을 위한 명령어 출력 활성화
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
+            set -e
             
             # 프로젝트 디렉토리로 이동 (없으면 생성)
             mkdir -p ~/moviestar
@@ -73,49 +69,22 @@ jobs:
             
             # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
             echo "🧪 학습용 - DB 데이터 삭제 중..."
-            if sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" 2>&1; then
-              echo "✅ DB 데이터 삭제 완료"
-            else
-              echo "⚠️ 삭제 실패 (컨테이너 준비 중)"
-            fi
+            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" || echo "⚠️ 삭제 실패 (컨테이너 준비 중)"
             
             # 앱 재시작하여 자동 초기화 트리거
             echo "🔄 앱 재시작 (자동 초기화 트리거)..."
-            sudo docker-compose restart app || echo "⚠️ 앱 재시작 실패, 계속 진행..."
+            sudo docker-compose restart app
             
-            # 초기화 완료 대기 (스크래핑은 시간이 걸릴 수 있음)
+            # 초기화 완료 대기
             echo "⏳ DB 초기화 대기 중 (스크래핑 시간 포함)..."
-            sleep 30
-            
-            # 초기화 완료 확인 (최대 60초 대기)
-            echo "🔍 DB 초기화 완료 확인 중..."
-            MAX_WAIT=60
-            WAIT_COUNT=0
-            MOVIE_COUNT="0"
-            while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
-              COUNT_RESULT=$(sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.countDocuments({})" 2>&1 || echo "0")
-              MOVIE_COUNT=$(echo "$COUNT_RESULT" | tr -d '\r\n' | grep -oE '[0-9]+' || echo "0")
-              if [ "$MOVIE_COUNT" != "0" ] && [ -n "$MOVIE_COUNT" ] && [ "$MOVIE_COUNT" != "" ]; then
-                echo "✅ DB 초기화 완료! 영화 데이터: ${MOVIE_COUNT}개"
-                break
-              fi
-              echo "⏳ 대기 중... (${WAIT_COUNT}초/${MAX_WAIT}초) - 현재 영화 수: ${MOVIE_COUNT}"
-              sleep 5
-              WAIT_COUNT=$((WAIT_COUNT + 5))
-            done
-            
-            if [ "$MOVIE_COUNT" = "0" ] || [ -z "$MOVIE_COUNT" ] || [ "$MOVIE_COUNT" = "" ]; then
-              echo "⚠️ 경고: DB 초기화가 완료되지 않았습니다. 로그를 확인하세요."
-            fi
+            sleep 20
             
             echo "🎉 배포 완료!"
             echo "📊 컨테이너 상태:"
-            sudo docker-compose ps || echo "⚠️ 컨테이너 상태 확인 실패"
+            sudo docker-compose ps
             
             echo "📝 앱 시작 로그 (DB 자동 초기화 확인):"
-            sudo docker-compose logs --tail=50 app || echo "⚠️ 로그 확인 실패"
-            
-            echo "✅ 스크립트 실행 완료"
+            sudo docker-compose logs --tail=40 app
           ENDSSH
           
           # SSH 키 삭제
