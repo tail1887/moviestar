@@ -78,16 +78,35 @@ jobs:
             echo "🔄 앱 재시작 (자동 초기화 트리거)..."
             sudo docker-compose restart app
             
-            # 초기화 완료 대기
+            # 초기화 완료 대기 (스크래핑은 시간이 걸릴 수 있음)
             echo "⏳ DB 초기화 대기 중 (스크래핑 시간 포함)..."
-            sleep 20
+            sleep 30
+            
+            # 초기화 완료 확인 (최대 60초 대기)
+            echo "🔍 DB 초기화 완료 확인 중..."
+            MAX_WAIT=60
+            WAIT_COUNT=0
+            while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+              MOVIE_COUNT=$(sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.countDocuments({})" | tr -d '\r\n' | grep -oE '[0-9]+' || echo "0")
+              if [ "$MOVIE_COUNT" != "0" ] && [ -n "$MOVIE_COUNT" ]; then
+                echo "✅ DB 초기화 완료! 영화 데이터: ${MOVIE_COUNT}개"
+                break
+              fi
+              echo "⏳ 대기 중... (${WAIT_COUNT}초/${MAX_WAIT}초) - 현재 영화 수: ${MOVIE_COUNT}"
+              sleep 5
+              WAIT_COUNT=$((WAIT_COUNT + 5))
+            done
+            
+            if [ "$MOVIE_COUNT" = "0" ] || [ -z "$MOVIE_COUNT" ]; then
+              echo "⚠️ 경고: DB 초기화가 완료되지 않았습니다. 로그를 확인하세요."
+            fi
             
             echo "🎉 배포 완료!"
             echo "📊 컨테이너 상태:"
             sudo docker-compose ps
             
             echo "📝 앱 시작 로그 (DB 자동 초기화 확인):"
-            sudo docker-compose logs --tail=40 app
+            sudo docker-compose logs --tail=50 app
           ENDSSH
           
           # SSH 키 삭제
