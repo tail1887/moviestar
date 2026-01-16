@@ -3,6 +3,7 @@ version: '3.8'
 services:
   app:
     build: .
+    restart: always  # 인스턴스 재시작 시 자동 시작
     ports:
       - "5000:5000"
     environment:
@@ -16,6 +17,7 @@ services:
 
   mongodb:
     image: mongo:latest
+    restart: always  # 인스턴스 재시작 시 자동 시작
     ports:
       - "27017:27017"
     volumes:
