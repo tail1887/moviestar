@@ -37,7 +37,7 @@ jobs:
           chmod 600 private_key.pem
           
           # SSH 접속 및 배포
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
             # set -e 제거: 일부 명령 실패 시에도 계속 진행
             set -x  # 디버깅을 위한 명령어 출력 활성화
             
@@ -73,11 +73,11 @@ jobs:
             
             # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
             echo "🧪 학습용 - DB 데이터 삭제 중..."
-            DELETE_RESULT=$(sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" 2>&1) || {
+            if sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" 2>&1; then
+              echo "✅ DB 데이터 삭제 완료"
+            else
               echo "⚠️ 삭제 실패 (컨테이너 준비 중)"
-              DELETE_RESULT=""
-            }
-            echo "삭제 결과: ${DELETE_RESULT}"
+            fi
             
             # 앱 재시작하여 자동 초기화 트리거
             echo "🔄 앱 재시작 (자동 초기화 트리거)..."
