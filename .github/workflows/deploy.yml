@@ -60,24 +60,21 @@ jobs:
             # Docker 컨테이너 중지 및 삭제
             sudo docker-compose down || true
             
-            # 새 이미지 빌드 및 컨테이너 시작
+            # 새 이미지 빌드 및 컨테이너 시작 (앱이 자동으로 DB 초기화)
             sudo docker-compose up -d --build
             
-            # 컨테이너가 완전히 시작될 때까지 대기
+            # 테스트용: DB 데이터 삭제 (수동 실행 시에만)
+            if [ "${{ github.event.inputs.clear_db }}" = "true" ]; then
+              echo "🧪 테스트 모드: DB 데이터 삭제 중..."
+              sleep 5
+              sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})"
+              echo "✅ 데이터 삭제 완료. 앱 재시작하여 자동 초기화..."
+              sudo docker-compose restart app
+            fi
+            
+            # 컨테이너 시작 대기
             echo "⏳ 컨테이너 시작 대기 중..."
-            sleep 10
-            
-            # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
-            echo "🧪 학습용 - DB 데이터 삭제 중..."
-            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" || echo "⚠️ 삭제 실패 (컨테이너 준비 중)"
-            
-            # 앱 재시작하여 자동 초기화 트리거
-            echo "🔄 앱 재시작 (자동 초기화 트리거)..."
-            sudo docker-compose restart app
-            
-            # 초기화 완료 대기
-            echo "⏳ DB 초기화 대기 중 (스크래핑 시간 포함)..."
-            sleep 20
+            sleep 15
             
             echo "🎉 배포 완료!"
             echo "📊 컨테이너 상태:"
