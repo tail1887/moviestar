@@ -87,10 +87,10 @@ jobs:
         run: |
           echo "🔍 배포 검증 중..."
           sleep 3
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${HOST}:5000 || echo "000")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${HOST}:80 || echo "000")
           if [ "$HTTP_CODE" = "200" ]; then
             echo "✅ 배포 성공! 애플리케이션이 정상 작동 중입니다."
-            echo "🌐 URL: http://${HOST}:5000"
+            echo "🌐 URL: http://${HOST}"
           else
             echo "⚠️ 배포 확인 필요 (HTTP Code: $HTTP_CODE)"
             exit 1
