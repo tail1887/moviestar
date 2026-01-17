@@ -71,7 +71,8 @@ jobs:
             sudo docker-compose ps || true
             sleep 5  # 컨테이너가 완전히 준비될 때까지 대기
             echo "mongosh 명령 실행 전..."
-            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" || true
+            # mongosh 출력을 완전히 리다이렉트하여 SSH 세션 방해 방지
+            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" > /dev/null 2>&1 || true
             echo "mongosh 명령 실행 후..."
             echo "✅ DB 데이터 삭제 명령 실행 완료"
             
