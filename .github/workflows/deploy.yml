@@ -35,7 +35,7 @@ jobs:
           
           # SSH 접속 및 배포
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
-            # set -e 제거: 일부 명령 실패 시에도 계속 진행
+            set -e
             
             # 프로젝트 디렉토리로 이동 (없으면 생성)
             mkdir -p ~/moviestar
@@ -60,56 +60,23 @@ jobs:
             # Docker 컨테이너 중지 및 삭제
             sudo docker-compose down || true
             
-            # 새 이미지 빌드 및 컨테이너 시작
+            # 새 이미지 빌드 및 컨테이너 시작 (앱이 자동으로 DB 초기화)
             sudo docker-compose up -d --build
-            
-            # 컨테이너가 완전히 시작될 때까지 대기
-            echo "⏳ 컨테이너 시작 대기 중..."
-            sleep 10
             
             # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
             echo "🧪 학습용 - DB 데이터 삭제 중..."
-            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" || true
-            echo "✅ DB 데이터 삭제 명령 실행 완료"
+            sleep 5  # 컨테이너가 완전히 준비될 때까지 대기
+            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" > /dev/null 2>&1 || true
+            echo "✅ DB 데이터 삭제 완료"
             
-            # 앱 재시작하여 자동 초기화 트리거
-            echo "🔄 앱 재시작 (자동 초기화 트리거)..."
-            sudo docker-compose restart app || true
-            echo "✅ 앱 재시작 명령 실행 완료"
+            # init_db.py 직접 실행하여 DB 초기화
+            echo "🔄 DB 초기화 실행 중..."
+            sudo docker-compose exec -T app python init_db.py || true
+            echo "✅ DB 초기화 완료"
             
-            # 초기화 완료 대기 (스크래핑은 시간이 걸릴 수 있음)
-            echo "⏳ DB 초기화 대기 중 (스크래핑 시간 포함)..."
-            sleep 10  # 앱 재시작 후 초기 대기
-            
-            # 스크래핑 완료까지 대기 (최대 120초)
-            echo "🔍 스크래핑 완료 확인 중..."
-            MAX_WAIT=120
-            WAIT_COUNT=0
-            MOVIE_COUNT=0
-            
-            while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
-              # DB에서 영화 개수 확인
-              COUNT_OUTPUT=$(sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.countDocuments({})" 2>&1 || echo "0")
-              # grep이 실패할 수 있으므로 에러 처리
-              MOVIE_COUNT=$(echo "$COUNT_OUTPUT" | grep -oE '[0-9]+' 2>/dev/null | head -1 || echo "0")
-              
-              # 영화 데이터가 있으면 완료
-              if [ "$MOVIE_COUNT" != "0" ] && [ -n "$MOVIE_COUNT" ] && [ "$MOVIE_COUNT" != "" ]; then
-                echo "✅ DB 초기화 완료! 영화 데이터: ${MOVIE_COUNT}개"
-                break
-              fi
-              
-              echo "⏳ 대기 중... (${WAIT_COUNT}초/${MAX_WAIT}초) - 현재 영화 수: ${MOVIE_COUNT}"
-              sleep 5
-              WAIT_COUNT=$((WAIT_COUNT + 5))
-            done
-            
-            # 최종 확인
-            if [ "$MOVIE_COUNT" = "0" ] || [ -z "$MOVIE_COUNT" ] || [ "$MOVIE_COUNT" = "" ]; then
-              echo "⚠️ 경고: DB 초기화가 완료되지 않았습니다. (최대 대기 시간: ${MAX_WAIT}초)"
-              echo "📝 앱 로그를 확인하세요:"
-              sudo docker-compose logs --tail=50 app
-            fi
+            # 컨테이너 시작 대기
+            echo "⏳ 컨테이너 시작 대기 중..."
+            sleep 15
             
             echo "🎉 배포 완료!"
             echo "📊 컨테이너 상태:"

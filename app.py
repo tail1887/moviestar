@@ -21,25 +21,9 @@ try:
     db = client.dbjungle
     print("MongoDB 연결 성공")
     
-    # 앱 시작 시 자동 DB 초기화 (CD 파이프라인의 핵심!)
+    # DB 상태 확인
     movie_count = db.movies.count_documents({})
-    if movie_count == 0:
-        print("📊 영화 데이터가 없습니다. 자동 초기화 시작...")
-        import subprocess
-        # 출력을 실시간으로 표시하기 위해 capture_output 제거
-        result = subprocess.run([sys.executable, 'init_db.py'], 
-                              text=True)
-        if result.returncode == 0:
-            final_count = db.movies.count_documents({})
-            print("✅ DB 자동 초기화 완료!")
-            print(f"스크래핑된 영화: {final_count}개")
-            if final_count == 0:
-                print("⚠️ 경고: 스크래핑 후에도 데이터가 없습니다. init_db.py 실행을 확인하세요.")
-        else:
-            print(f"❌ DB 초기화 실패 (종료 코드: {result.returncode})")
-            print("⚠️ init_db.py 실행 중 오류가 발생했습니다.")
-    else:
-        print(f"✅ 영화 데이터 확인 완료: {movie_count}개")
+    print(f"✅ 영화 데이터: {movie_count}개")
         
 except Exception as e:
     print(f"MongoDB 연결 실패: {e}")
