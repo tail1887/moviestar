@@ -35,7 +35,7 @@ jobs:
           
           # SSH 접속 및 배포
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
-            set -e
+            # set -e 제거: 일부 명령 실패 시에도 계속 진행
             
             # 프로젝트 디렉토리로 이동 (없으면 생성)
             mkdir -p ~/moviestar
@@ -66,13 +66,20 @@ jobs:
             # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
             echo "🧪 학습용 - DB 데이터 삭제 중..."
             sleep 5  # 컨테이너가 완전히 준비될 때까지 대기
-            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" > /dev/null 2>&1 || true
-            echo "✅ DB 데이터 삭제 완료"
+            # mongosh 명령 실행 (출력을 명시적으로 리다이렉트)
+            if sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" > /dev/null 2>&1; then
+              echo "✅ DB 데이터 삭제 완료"
+            else
+              echo "⚠️ DB 데이터 삭제 실패, 계속 진행..."
+            fi
             
             # init_db.py 직접 실행하여 DB 초기화
             echo "🔄 DB 초기화 실행 중..."
-            sudo docker-compose exec -T app python init_db.py || true
-            echo "✅ DB 초기화 완료"
+            if sudo docker-compose exec -T app python init_db.py; then
+              echo "✅ DB 초기화 완료"
+            else
+              echo "⚠️ DB 초기화 실패, 계속 진행..."
+            fi
             
             # 컨테이너 시작 대기
             echo "⏳ 컨테이너 시작 대기 중..."
