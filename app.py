@@ -21,9 +21,20 @@ try:
     db = client.dbjungle
     print("MongoDB 연결 성공")
     
-    # DB 상태 확인
-    movie_count = db.movies.count_documents({})
-    print(f"✅ 영화 데이터: {movie_count}개")
+    # DB 초기화 모드 (환경변수 CLEAR_DB=true일 때)
+    if os.getenv('CLEAR_DB', 'false').lower() == 'true':
+        print("🔄 DB 초기화 모드: 기존 데이터 삭제 후 초기화...")
+        import subprocess
+        result = subprocess.run([sys.executable, 'init_db.py'], text=True)
+        if result.returncode == 0:
+            final_count = db.movies.count_documents({})
+            print(f"✅ DB 초기화 완료! 영화 데이터: {final_count}개")
+        else:
+            print(f"⚠️ DB 초기화 실패 (종료 코드: {result.returncode})")
+    else:
+        # DB 상태 확인
+        movie_count = db.movies.count_documents({})
+        print(f"✅ 영화 데이터: {movie_count}개")
         
 except Exception as e:
     print(f"MongoDB 연결 실패: {e}")

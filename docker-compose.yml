@@ -10,6 +10,7 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_DB=dbjungle
+      - CLEAR_DB=${CLEAR_DB:-false}
     depends_on:
       - mongodb
     volumes:
