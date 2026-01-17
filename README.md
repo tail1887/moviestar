@@ -75,6 +75,8 @@
       - [🌿 Branch: `feature/like-function` (좋아요 기능 완성)](#-branch-featurelike-function-좋아요-기능-완성)
       - [🎨 Branch: `style/ui-enhancement` (UI 개선)](#-branch-styleui-enhancement-ui-개선)
       - [🐛 Branch: `fix/error-handling` (에러 처리)](#-branch-fixerror-handling-에러-처리)
+      - [� Branch: `chore/docker` (Docker 환경 구축)](#-branch-choredocker-docker-환경-구축)
+      - [🐛 Branch: `fix/docker-env-config` (Docker 환경 설정 수정)](#-branch-fixdocker-env-config-docker-환경-설정-수정)
       - [📝 Merge to `main`](#-merge-to-main)
   - [🔍 Troubleshooting \& Challenges](#-troubleshooting--challenges)
   - [📝 License](#-license)
@@ -493,7 +495,7 @@ docker-compose ps
 정상 실행 시 출력 예시:
 ```
 NAME                  IMAGE           STATUS       PORTS
-moviestar-app-1       moviestar-app   Up X minutes 0.0.0.0:5000->5000/tcp
+moviestar-app-1       moviestar-app   Up X minutes 0.0.0.0:80->5000/tcp
 moviestar-mongodb-1   mongo:latest    Up X minutes 0.0.0.0:27017->27017/tcp
 ```
 
@@ -508,8 +510,10 @@ docker-compose exec app python init_db.py
 #### 5️⃣ 브라우저에서 접속
 
 ```
-http://localhost:5000
+http://localhost
 ```
+
+> **참고**: Docker는 HTTP 기본 포트(80)를 사용하므로 포트 번호 없이 접속할 수 있습니다.
 
 ### 🔧 유용한 Docker 명령어
 
