@@ -826,6 +826,29 @@ python -m unittest discover tests/integration
   - Docker Compose는 서비스 이름으로 자동 DNS 해석 제공
 </details>
 
+<details>
+<summary><b>9. CD 파이프라인에서 DB 초기화 문제 해결</b></summary>
+
+- **상황**: CD 파이프라인 배포 후 웹사이트에 영화 데이터가 표시되지 않음.
+- **원인**: 
+  - 배포 스크립트에서 `mongosh` 명령을 사용하여 DB 삭제 후 재시작
+  - SSH heredoc 내에서 `mongosh` 명령 실행 시 출력 처리 문제로 스크립트가 중단됨
+  - `set -e`로 인해 명령 실패 시 스크립트가 즉시 종료됨
+- **해결**: 
+  - `mongosh` 명령을 제거하고 `app.py`에서 환경변수 기반으로 DB 초기화 처리
+  - `CLEAR_DB=true` 환경변수 설정 시 `app.py`가 자동으로 `init_db.py` 실행
+  - Python 코드로만 처리하여 SSH heredoc 문제 회피
+  - 배포 스크립트는 환경변수 설정만 담당
+- **개선 효과**: 
+  - `mongosh` 명령 제거로 SSH 세션 문제 해결
+  - DB 초기화 로직을 `app.py`로 통합하여 중복 코드 제거
+  - 배포 스크립트 단순화 및 안정성 향상
+- **교훈**: 
+  - SSH heredoc 내에서 외부 명령(mongosh 등) 실행 시 출력 처리 주의
+  - 가능한 한 애플리케이션 코드에서 처리하도록 통합
+  - 환경변수를 활용한 동작 제어가 더 안정적
+</details>
+
 ---
 
 ## 📝 License
