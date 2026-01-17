@@ -35,8 +35,7 @@ jobs:
           
           # SSH 접속 및 배포
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${USER}@${HOST} bash -s << 'ENDSSH'
-            # set -e 제거: 일부 명령 실패 시에도 계속 진행
-            set -x  # 디버깅: 모든 명령 출력
+            set -e
             
             # 프로젝트 디렉토리로 이동 (없으면 생성)
             mkdir -p ~/moviestar
@@ -64,24 +63,14 @@ jobs:
             # 새 이미지 빌드 및 컨테이너 시작 (앱이 자동으로 DB 초기화)
             sudo docker-compose up -d --build
             
-            # 학습용: 매번 DB 데이터 삭제하여 자동 초기화 테스트
-            echo "🧪 학습용 - DB 데이터 삭제 중..."
-            echo "현재 시각: $(date)"
-            echo "컨테이너 상태 확인:"
-            sudo docker-compose ps || true
-            sleep 5  # 컨테이너가 완전히 준비될 때까지 대기
-            echo "mongosh 명령 실행 전..."
-            # mongosh 출력을 완전히 리다이렉트하여 SSH 세션 방해 방지
-            sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})" > /dev/null 2>&1 || true
-            echo "mongosh 명령 실행 후..."
-            echo "✅ DB 데이터 삭제 명령 실행 완료"
-            
-            # init_db.py 직접 실행하여 DB 초기화
-            echo "🔄 DB 초기화 실행 중..."
-            echo "init_db.py 실행 전..."
-            sudo docker-compose exec -T app python init_db.py || true
-            echo "init_db.py 실행 후..."
-            echo "✅ DB 초기화 명령 실행 완료"
+            # 테스트용: DB 데이터 삭제 (수동 실행 시에만)
+            if [ "${{ github.event.inputs.clear_db }}" = "true" ]; then
+              echo "🧪 테스트 모드: DB 데이터 삭제 중..."
+              sleep 5
+              sudo docker-compose exec -T mongodb mongosh dbjungle --quiet --eval "db.movies.deleteMany({})"
+              echo "✅ 데이터 삭제 완료. 앱 재시작하여 자동 초기화..."
+              sudo docker-compose restart app
+            fi
             
             # 컨테이너 시작 대기
             echo "⏳ 컨테이너 시작 대기 중..."
@@ -92,11 +81,7 @@ jobs:
             sudo docker-compose ps
             
             echo "📝 앱 시작 로그 (DB 자동 초기화 확인):"
-            sudo docker-compose logs --tail=50 app || true
-            echo "📝 MongoDB 로그:"
-            sudo docker-compose logs --tail=20 mongodb || true
-            echo "📝 시스템 리소스 확인:"
-            docker stats --no-stream || true
+            sudo docker-compose logs --tail=40 app
           ENDSSH
           
           # SSH 키 삭제
