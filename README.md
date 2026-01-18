@@ -853,6 +853,37 @@ python -m unittest discover tests/integration
   - 환경변수를 활용한 동작 제어가 더 안정적
 </details>
 
+<details>
+<summary><b>10. EC2 인스턴스 재생성 시 GitHub Secrets 업데이트</b></summary>
+
+- **상황**: EC2 인스턴스를 종료하고 새로 생성하면 퍼블릭 IP 주소가 변경됨.
+- **문제**: 
+  - GitHub Actions의 `EC2_HOST` secret이 기존 IP 주소로 설정되어 있음
+  - 새로운 인스턴스로 배포 시 연결 실패 또는 잘못된 서버로 배포됨
+- **해결 방법**:
+  1. AWS 콘솔에서 새 EC2 인스턴스의 **퍼블릭 IPv4 주소** 확인
+  2. GitHub 저장소 → **Settings** → **Secrets and variables** → **Actions** 이동
+  3. **EC2_HOST** secret 수정 또는 재생성
+  4. 새 인스턴스의 퍼블릭 IP 주소를 값으로 입력
+- **참고**:
+  - **Elastic IP 설정 방법** (IP 주소 고정):
+    1. AWS 콘솔 → **EC2** → 왼쪽 메뉴 **Network & Security** → **Elastic IPs**
+    2. **Allocate Elastic IP address** 클릭 → **Allocate** (VPC 선택)
+    3. 할당된 IP 선택 → **Actions** → **Associate Elastic IP address**
+    4. 인스턴스 선택 → **Associate** 클릭
+    5. 이후 인스턴스를 재시작해도 동일한 IP 주소 유지
+  - Elastic IP를 사용하면 IP 주소가 고정되어 이 문제를 방지할 수 있음
+  - SSH 키(`EC2_SSH_KEY`)와 사용자명(`EC2_USER`)은 일반적으로 변경할 필요 없음
+  - ⚠️ **비용 주의사항**:
+    - Elastic IP를 할당만 하고 인스턴스에 연결하지 않으면 시간당 약 $0.005 비용 발생
+    - 2024년 2월 이후 AWS 정책 변경으로 공용 IPv4 주소 사용 시 시간당 요금이 발생할 수 있음
+    - 정확한 요금은 AWS 리전 및 계정 설정에 따라 다를 수 있으니 Billing 콘솔에서 확인 권장
+    - Elastic IP를 사용하면 IP 주소 변경 문제를 해결할 수 있으나, 비용을 고려하여 선택하세요
+- **교훈**: 
+  - 인프라 변경 시 CI/CD 설정도 함께 업데이트 필요
+  - Elastic IP 사용을 고려하면 배포 안정성 향상
+</details>
+
 ---
 
 ## 📝 License
